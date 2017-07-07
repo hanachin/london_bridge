@@ -8,4 +8,7 @@ Gem::Specification.new do |s|
   s.email = "hanachin@gmail.com"
   s.files = `git ls-files`.split(/\R/)
   s.executables = s.files.grep(/^bin/)
+
+  s.add_development_dependency "rake"
+  s.add_development_dependency "petitest"
 end
