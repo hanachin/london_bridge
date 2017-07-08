@@ -1,5 +1,6 @@
 require_relative "unknown_token_error"
 require_relative "text_token"
+require_relative "header_token"
 
 module LondonBridge
   class Lexer
