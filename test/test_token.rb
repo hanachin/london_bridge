@@ -6,13 +6,13 @@ module Lexer
 
     def test_token_name
       assert do
-        ::LondonBridge::Lexer::TextToken.token_name == "text"
+        ::LondonBridge::TextToken.token_name == "text"
       end
     end
 
     def test_name
       assert do
-        ::LondonBridge::Lexer::TextToken.new("hi").name == "text"
+        ::LondonBridge::TextToken.new("hi").name == "text"
       end
     end
   end

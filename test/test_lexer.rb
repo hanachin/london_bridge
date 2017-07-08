@@ -6,12 +6,12 @@ class TestLexer < Petitest::Test
 
   def test_plaintext
     assert do
-      ::LondonBridge::Lexer.new.lex("hi") == [::LondonBridge::Lexer::TextToken.new("hi")]
+      ::LondonBridge::Lexer.new.lex("hi") == [::LondonBridge::TextToken.new("hi")]
     end
   end
 
   def test_failed_to_identify_token
-    assert_raise(::LondonBridge::Lexer::UnknownTokenError) do
+    assert_raise(::LondonBridge::UnknownTokenError) do
       ::LondonBridge::Lexer.new([]).lex("hi")
     end
   end

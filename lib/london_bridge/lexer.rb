@@ -1,26 +1,8 @@
+require_relative "unknown_token_error"
+require_relative "text_token"
+
 module LondonBridge
   class Lexer
-    class UnknownTokenError < StandardError; end
-
-    module Token
-      # Add .token_name to the base class,
-      # .token_name returns name of the token
-      def self.included(base)
-        def base.token_name
-          name.split(/::/).last.gsub(/Token\z/, "").gsub(/(?!^)[A-Z]/) { |c| c + "_" }.downcase
-        end
-      end
-
-      # @return [String] name of the token
-      def name
-        self.class.token_name
-      end
-    end
-
-    class TextToken < Struct.new(:text)
-      include Token
-    end
-
     # @param scanners [Array<#call>] the token scanners.
     #   Each scanner should respond to call with a markdown argument,
     #   and yield token to the block, and then return the rest of markdown.
