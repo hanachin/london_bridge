@@ -14,11 +14,58 @@ class TestParser < Petitest::Test
     end
   end
 
-  def test_parse_header
-    header_token = ::LondonBridge::HeaderToken.new("# ")
-    text_token = ::LondonBridge::TextToken.new("hi")
+  def test_parse_indented_content
+    indent = ::LondonBridge::IndentToken.new("    ")
+    l1 = ::LondonBridge::TextToken.new("  hi")
+    newline = ::LondonBridge::NewlineToken.new("\n")
+    l2 = ::LondonBridge::TextToken.new("こんにちは")
+    tokens = [
+      indent, l1, newline,
+      indent, l2, newline,
+    ]
+    expected_ast = [
+      :root,
+      [:codeblock, [:text, [l1, newline, l2, newline]]]
+    ]
     assert do
-      ::LondonBridge::Parser.new.parse([header_token, text_token]) == [:root, [:header, header_token, [[:text, [text_token]]]]]
+      ::LondonBridge::Parser.new.parse(tokens) == expected_ast
+    end
+  end
+
+
+  def test_parse_indented_content
+    indent = ::LondonBridge::IndentToken.new("    ")
+    l1 = ::LondonBridge::TextToken.new("  hi")
+    newline = ::LondonBridge::NewlineToken.new("\n")
+    l2 = ::LondonBridge::TextToken.new("こんにちは")
+    tokens = [
+      indent, l1, newline,
+      indent, l2, newline,
+    ]
+    expected_ast = [
+      :root,
+      [:codeblock, [:text, [l1, newline, l2, newline]]]
+    ]
+    assert do
+      ::LondonBridge::Parser.new.parse(tokens) == expected_ast
+    end
+  end
+
+  def test_parse_not_indented_content
+    indent = ::LondonBridge::IndentToken.new("    ")
+    l1 = ::LondonBridge::TextToken.new("  hi")
+    newline = ::LondonBridge::NewlineToken.new("\n")
+    l2 = ::LondonBridge::TextToken.new("こんにちは")
+    tokens = [
+      indent, l1, newline,
+      indent, l2, newline,
+    ]
+    expected_ast = [
+      :root,
+      [:codeblock, [:code, [l1, newline, l2, newline]]]
+    ]
+    assert do
+      ::LondonBridge::Parser.new.parse(tokens) == expected_ast
     end
   end
 
