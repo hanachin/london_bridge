@@ -76,4 +76,15 @@ class TestParser < Petitest::Test
       ::LondonBridge::Parser.new.parse(tokens) == [:root, [:hr]]
     end
   end
+
+  def test_parse_too_many_themantic_break_token
+    thematic_break_token = ::LondonBridge::ThematicBreakToken.new("***\n")
+    tokens = [
+      ::LondonBridge::IndentToken.new("    "),
+      thematic_break_token
+    ]
+    assert do
+      ::LondonBridge::Parser.new.parse(tokens) == [:root, [:codeblock, [:code, [thematic_break_token]]]]
+    end
+  end
 end

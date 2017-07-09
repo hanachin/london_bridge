@@ -15,12 +15,8 @@ module LondonBridge
           ast << [:header, t, [[:text, inline_content]]]
         when IndentToken
           content = []
-          while !tokens.empty? && tokens[i + 1].is_a?(TextToken)
-            content << tokens.delete_at(i + 1)
-          end
-          if tokens[i + 1].is_a?(NewlineToken)
-            content << tokens.delete_at(i + 1)
-          end
+          content << tokens.delete_at(i + 1) until tokens[i + 1].nil? || tokens[i + 1].is_a?(NewlineToken)
+          content << tokens.delete_at(i + 1) unless tokens[i + 1].nil?
           catch(:end_block) do
             while !tokens.empty? && tokens[i + 1].is_a?(IndentToken)
               tokens.delete_at(i + 1)
