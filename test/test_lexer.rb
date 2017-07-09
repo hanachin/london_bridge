@@ -6,7 +6,10 @@ class TestLexer < Petitest::Test
 
   def test_plaintext
     assert do
-      ::LondonBridge::Lexer.new.lex("hi") == [::LondonBridge::TextToken.new("hi")]
+      ::LondonBridge::Lexer.new.lex("# hi") == [
+        ::LondonBridge::HeaderToken.new(1),
+        ::LondonBridge::TextToken.new("hi")
+      ]
     end
   end
 

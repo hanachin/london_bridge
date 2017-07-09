@@ -26,7 +26,10 @@ module LondonBridge
     private
 
     def default_scanners
-      [-> (md, &blk) { blk&.call(TextToken.new(md)); ""  }]
+      [
+        HeaderToken.scanner,
+        -> (md, &blk) { blk&.call(TextToken.new(md)); ""  }
+      ]
     end
   end
 end
