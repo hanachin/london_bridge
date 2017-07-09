@@ -2,8 +2,8 @@ require_relative "token"
 require_relative "newline_token"
 
 module LondonBridge
-  class TextToken < Struct.new(:text)
-    include Token
+  class TextToken < Token
+    alias text source
 
     def self.scanner
       lambda do |md, &blk|

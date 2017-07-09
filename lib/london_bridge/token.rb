@@ -1,4 +1,4 @@
 module LondonBridge
-  module Token
+  class Token < Struct.new(:source)
   end
 end

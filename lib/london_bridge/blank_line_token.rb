@@ -1,7 +1,5 @@
 module LondonBridge
-  class BlankLineToken < Struct.new(:blank_line)
-    include Token
-
+  class BlankLineToken < Token
     def self.scanner
       lambda do |md, &blk|
         return unless m = md.match(/\A^\R/)

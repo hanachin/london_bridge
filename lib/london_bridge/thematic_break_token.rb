@@ -1,9 +1,7 @@
 require_relative "token"
 
 module LondonBridge
-  class ThematicBreakToken < Struct.new(:hr)
-    include Token
-
+  class ThematicBreakToken < Token
     def self.scanner
       lambda do |md, &blk|
         return unless m = md.match(/\A[ ]{0,3}(\*|-|_)(?:[\t ]*\1){2}(?:\t| |\1)*(?:\R|\z)/)

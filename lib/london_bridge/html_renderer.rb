@@ -44,7 +44,7 @@ module LondonBridge
     # @param code [Array<Token>] the code tokens
     # @return [String] the code
     def on_code(code)
-      "<code>#{code.map(&:text).join}</code>"
+      "<code>#{code.map(&:source).join}</code>"
     end
 
     # @param [code] [Array] the code ast

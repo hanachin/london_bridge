@@ -1,5 +1,5 @@
 module LondonBridge
-  class IndentToken < Struct.new(:source)
+  class IndentToken < Token
     def self.scanner
       lambda do |md, &blk|
         return unless m = md.match(/\A\t|\A(?: ){4}/)
