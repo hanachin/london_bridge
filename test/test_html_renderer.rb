@@ -4,7 +4,7 @@ class TestHtmlRenderer < Petitest::Test
   prepend Petitest::PowerAssert
 
   def test_on_header
-    header_token = ::LondonBridge::HeaderToken.new(1)
+    header_token = ::LondonBridge::HeaderToken.new("#       ")
     text_token = ::LondonBridge::TextToken.new("hi")
     ast = [:header, header_token, [[:text, [text_token]]]]
 
