@@ -3,6 +3,7 @@ require_relative "text_token"
 require_relative "header_token"
 require_relative "blank_line_token"
 require_relative "thematic_break_token"
+require_relative "indent_token"
 
 module LondonBridge
   class Lexer
