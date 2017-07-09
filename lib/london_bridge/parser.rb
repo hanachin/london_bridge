@@ -24,21 +24,17 @@ module LondonBridge
           catch(:end_block) do
             while !tokens.empty? && tokens[i + 1].is_a?(IndentToken)
               tokens.delete_at(i + 1)
+              content << tokens.delete_at(i + 1) until tokens[i + 1].nil? || tokens[i + 1].is_a?(NewlineToken)
+              throw(:end_block) if tokens[i + 1].nil?
 
-              break if tokens[i + 1].nil?
+              content << tokens.delete_at(i + 1)
 
-              loop do
-                unless tokens[i + 1].is_a?(NewlineToken)
-                  content << tokens.delete_at(i + 1)
-                  next
-                end
-
+              unless tokens[i + 1].is_a?(IndentToken)
+                tokens.delete_at(i + 1) while tokens[i + 1].is_a?(NewlineToken)
                 throw(:end_block)
               end
             end
           end
-          content << tokens.delete_at(i + 1) if tokens[i + 1].is_a?(NewlineToken)
-          tokens.delete_at(i + 1) while tokens[i + 1].is_a?(NewlineToken)
           ast << [:codeblock, [:code, content]]
         when TextToken
           content = [t]
