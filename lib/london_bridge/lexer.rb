@@ -30,6 +30,7 @@ module LondonBridge
 
     def default_scanners
       [
+        IndentToken.scanner,
         HeaderToken.scanner,
         ThematicBreakToken.scanner,
         BlankLineToken.scanner,
