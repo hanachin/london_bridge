@@ -3,8 +3,12 @@ require_relative "test_helper"
 class TestParser < Petitest::Test
   prepend ::Petitest::PowerAssert
 
-  def test_parse
-    tokens = [::LondonBridge::TextToken.new("hi")]
+  def test_parse_paragraph
+    tokens = [
+      ::LondonBridge::TextToken.new("hi"),
+      ::LondonBridge::NewlineToken.new("\n"),
+      ::LondonBridge::TextToken.new("こんにちは"),
+    ]
     assert do
       ::LondonBridge::Parser.new.parse(tokens) == [:root, [:paragraph, [:text, tokens]]]
     end
