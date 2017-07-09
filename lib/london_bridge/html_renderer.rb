@@ -17,7 +17,7 @@ module LondonBridge
 
     # @param ts [Array<TextToken>] the token of the text
     # @return [String] the text
-    def on_text(*ts)
+    def on_text(ts)
       ts.map(&:text).join
     end
 

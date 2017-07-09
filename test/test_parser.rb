@@ -6,7 +6,15 @@ class TestParser < Petitest::Test
   def test_parse
     tokens = [::LondonBridge::TextToken.new("hi")]
     assert do
-      ::LondonBridge::Parser.new.parse(tokens) == [:root, [:paragraph, [:text, *tokens]]]
+      ::LondonBridge::Parser.new.parse(tokens) == [:root, [:paragraph, [:text, tokens]]]
+    end
+  end
+
+  def test_parse_header
+    header_token = ::LondonBridge::HeaderToken.new("# ")
+    text_token = ::LondonBridge::TextToken.new("hi")
+    assert do
+      ::LondonBridge::Parser.new.parse([header_token, text_token]) == [:root, [:header, header_token, [[:text, [text_token]]]]]
     end
   end
 

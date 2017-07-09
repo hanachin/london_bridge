@@ -13,7 +13,7 @@ module LondonBridge
           end
           ast << [:header, t, [[:text, inline_content]]]
         when TextToken
-          ast << [:paragraph, [:text, t]]
+          ast << [:paragraph, [:text, [t]]]
         when ThematicBreakToken
           ast << [:hr]
         end
