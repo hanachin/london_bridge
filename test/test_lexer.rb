@@ -18,4 +18,10 @@ class TestLexer < Petitest::Test
       ::LondonBridge::Lexer.new([]).lex("hi")
     end
   end
+
+  def test_thematic_break_token
+    assert do
+      ::LondonBridge::Lexer.new.lex("***\n") == [::LondonBridge::ThematicBreakToken.new("***\n")]
+    end
+  end
 end

@@ -35,5 +35,10 @@ module LondonBridge
       content = children.map { |c| render(c) }.join
       "<#{tag}>#{content}</#{tag}>"
     end
+
+    # @return [String] the hr
+    def on_hr
+      "<hr />"
+    end
   end
 end

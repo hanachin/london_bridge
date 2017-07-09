@@ -18,4 +18,10 @@ class TestHtmlRenderer < Petitest::Test
       ::LondonBridge::HtmlRenderer.new.on_text(t) == "hi"
     end
   end
+
+  def test_on_hr
+    assert do
+      ::LondonBridge::HtmlRenderer.new.on_hr == "<hr />"
+    end
+  end
 end

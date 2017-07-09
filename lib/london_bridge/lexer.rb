@@ -2,6 +2,7 @@ require_relative "unknown_token_error"
 require_relative "text_token"
 require_relative "header_token"
 require_relative "blank_line_token"
+require_relative "thematic_break_token"
 
 module LondonBridge
   class Lexer
@@ -29,6 +30,7 @@ module LondonBridge
     def default_scanners
       [
         HeaderToken.scanner,
+        ThematicBreakToken.scanner,
         BlankLineToken.scanner,
         TextToken.scanner,
       ]
