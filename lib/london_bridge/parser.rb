@@ -7,7 +7,11 @@ module LondonBridge
       tokens.each_with_index do |t, i|
         case t
         when HeaderToken
-          ast << [:header, t, [[:text, tokens.delete_at(i + 1)]]]
+          inline_content = []
+          while tokens.size.nonzero? && tokens[i + 1].is_a?(TextToken)
+            inline_content << tokens.delete_at(i + 1)
+          end
+          ast << [:header, t, [[:text, inline_content]]]
         when TextToken
           ast << [:paragraph, [:text, t]]
         end
