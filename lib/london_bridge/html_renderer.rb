@@ -40,5 +40,17 @@ module LondonBridge
     def on_hr
       "<hr />"
     end
+
+    # @param code [Array<Token>] the code tokens
+    # @return [String] the code
+    def on_code(code)
+      "<code>#{code.map(&:text).join}</code>"
+    end
+
+    # @param [code] [Array] the code ast
+    # @return [String] the codeblock
+    def on_codeblock(code)
+      "<pre>#{render(code)}</pre>"
+    end
   end
 end

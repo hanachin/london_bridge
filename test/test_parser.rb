@@ -44,7 +44,7 @@ class TestParser < Petitest::Test
     ]
     expected_ast = [
       :root,
-      [:codeblock, [:text, [l1, newline, l2, newline]]]
+      [:codeblock, [:code, [l1, newline, l2, newline]]]
     ]
     assert do
       ::LondonBridge::Parser.new.parse(tokens) == expected_ast
@@ -58,11 +58,12 @@ class TestParser < Petitest::Test
     l2 = ::LondonBridge::TextToken.new("こんにちは")
     tokens = [
       indent, l1, newline,
-      indent, l2, newline,
+      l2, newline,
     ]
     expected_ast = [
       :root,
-      [:codeblock, [:code, [l1, newline, l2, newline]]]
+      [:codeblock, [:code, [l1, newline]]],
+      [:paragraph, [:text, [l2, newline]]],
     ]
     assert do
       ::LondonBridge::Parser.new.parse(tokens) == expected_ast

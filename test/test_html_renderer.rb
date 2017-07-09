@@ -25,4 +25,14 @@ class TestHtmlRenderer < Petitest::Test
       ::LondonBridge::HtmlRenderer.new.on_hr == "<hr />"
     end
   end
+
+  def test_on_codeblock
+    l1 = ::LondonBridge::TextToken.new("  hi")
+    l2 = ::LondonBridge::TextToken.new("こんにちは")
+    newline = ::LondonBridge::NewlineToken.new("\n")
+    ast = [:codeblock, [:code, [l1, newline, l2, newline]]]
+    assert do
+      ::LondonBridge::HtmlRenderer.new.render(ast) == "<pre><code>  hi\nこんにちは\n</code></pre>"
+    end
+  end
 end
