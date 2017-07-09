@@ -13,6 +13,14 @@ module Lexer
       end
     end
 
+    def test_scanner_indentation
+      [" # hi", "  # hi", "   # hi"].each do |md|
+        assert do
+          ::LondonBridge::HeaderToken.scanner.call(md) { |t| @t = t } == "hi" && @t.level == 1
+        end
+      end
+    end
+
     def test_scanner_too_much_level
       assert do
         ::LondonBridge::HeaderToken.scanner.call("####### hi").nil?

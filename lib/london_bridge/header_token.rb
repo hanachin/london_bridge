@@ -4,7 +4,7 @@ module LondonBridge
   class HeaderToken < Token
     def self.scanner
       lambda do |md, &blk|
-        return unless m = md.match(/\A\#{1,6} +/)
+        return unless m = md.match(/\A(?: ){0,3}\#{1,6} +/)
         blk&.call(new(m[0]))
         md[m[0].size..-1]
       end
