@@ -30,7 +30,7 @@ module LondonBridge
       [
         HeaderToken.scanner,
         BlankLineToken.scanner,
-        -> (md, &blk) { blk&.call(TextToken.new(md)); ""  }
+        TextToken.scanner,
       ]
     end
   end
