@@ -32,6 +32,31 @@ module LondonBridge
             end
           end
           ast << [:codeblock, [:code, content]]
+        when BlockquoteToken
+          ts = []
+          catch(:eof) do
+            loop do
+              while tokens.size > i && tokens[i].is_a?(BlockquoteToken)
+                tokens.delete_at(i)
+                ts << tokens.delete_at(i) until tokens[i].nil? || tokens[i].is_a?(NewlineToken)
+                throw(:eof) if tokens[i].nil?
+
+                ts << tokens.delete_at(i)
+              end
+
+              if tokens[i].is_a?(TextToken)
+                ts << tokens.delete_at(i) while tokens[i].is_a?(TextToken)
+                ts << tokens.delete_at(i) if tokens[i].is_a?(NewlineToken)
+                next
+              end
+
+              throw(:eof)
+            end
+          end
+          ts.pop if ts.last.is_a?(NewlineToken)
+          content = parse(ts)
+          _root, *children = content
+          ast << [:blockquote, children]
         when TextToken
           content = [t]
           loop do

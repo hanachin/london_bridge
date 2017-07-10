@@ -87,4 +87,14 @@ class TestParser < Petitest::Test
       ::LondonBridge::Parser.new.parse(tokens) == [:root, [:codeblock, [:code, [thematic_break_token]]]]
     end
   end
+
+  def test_parse_blockquote
+    blockquote = ::LondonBridge::BlockquoteToken.new("> ")
+    text = ::LondonBridge::TextToken.new("hi")
+    newline = ::LondonBridge::NewlineToken.new("\n")
+    tokens = [blockquote, text, newline, text, newline, blockquote, text, newline]
+    assert do
+      ::LondonBridge::Parser.new.parse(tokens) == [:root, [:blockquote, [[:paragraph, [:text, [text, newline, text, newline, text]]]]]]
+    end
+  end
 end
