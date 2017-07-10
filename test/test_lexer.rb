@@ -30,4 +30,10 @@ class TestLexer < Petitest::Test
       ::LondonBridge::Lexer.new.lex("      hi\n") == [::LondonBridge::IndentToken.new("    "), ::LondonBridge::TextToken.new("  hi"), ::LondonBridge::NewlineToken.new("\n")]
     end
   end
+
+  def test_blockquote
+    assert do
+      ::LondonBridge::Lexer.new.lex("> hi\n") == [::LondonBridge::BlockquoteToken.new("> "), ::LondonBridge::TextToken.new("hi"), ::LondonBridge::NewlineToken.new("\n")]
+    end
+  end
 end
