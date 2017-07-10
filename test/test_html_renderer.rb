@@ -35,4 +35,14 @@ class TestHtmlRenderer < Petitest::Test
       ::LondonBridge::HtmlRenderer.new.render(ast) == "<pre><code>  hi\nこんにちは\n</code></pre>"
     end
   end
+
+  def test_on_blockquote
+    blockquote = ::LondonBridge::BlockquoteToken.new("> ")
+    text = ::LondonBridge::TextToken.new("hi")
+    newline = ::LondonBridge::NewlineToken.new("\n")
+    ast = [:blockquote, [[:paragraph, [:text, [text, newline, text]]]]]
+    assert do
+      ::LondonBridge::HtmlRenderer.new.render(ast) == "<blockquote><p>hi\nhi</p></blockquote>"
+    end
+  end
 end

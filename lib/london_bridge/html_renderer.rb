@@ -52,5 +52,12 @@ module LondonBridge
     def on_codeblock(code)
       "<pre>#{render(code)}</pre>"
     end
+
+    # @param [code] [Array] the blockaquote ast
+    # @return [String] the blockquote
+    def on_blockquote(children)
+      quoted = children.map { |c| render(c) }.join
+      "<blockquote>#{quoted}</blockquote>"
+    end
   end
 end
