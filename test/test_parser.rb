@@ -4,44 +4,15 @@ class TestParser < Petitest::Test
   prepend ::Petitest::PowerAssert
 
   def test_parse_paragraph
-    tokens = [
-      ::LondonBridge::TextToken.new("hi"),
-      ::LondonBridge::NewlineToken.new("\n"),
-      ::LondonBridge::TextToken.new("こんにちは"),
-    ]
+    tokens = ::LondonBridge::Lexer.new.lex("hi\nこんにちは")
     assert do
       ::LondonBridge::Parser.new.parse(tokens) == [:root, [:paragraph, [:text, tokens]]]
     end
   end
 
   def test_parse_indented_content
-    indent = ::LondonBridge::IndentToken.new("    ")
-    l1 = ::LondonBridge::TextToken.new("  hi")
-    newline = ::LondonBridge::NewlineToken.new("\n")
-    l2 = ::LondonBridge::TextToken.new("こんにちは")
-    tokens = [
-      indent, l1, newline,
-      indent, l2, newline,
-    ]
-    expected_ast = [
-      :root,
-      [:codeblock, [:text, [l1, newline, l2, newline]]]
-    ]
-    assert do
-      ::LondonBridge::Parser.new.parse(tokens) == expected_ast
-    end
-  end
-
-
-  def test_parse_indented_content
-    indent = ::LondonBridge::IndentToken.new("    ")
-    l1 = ::LondonBridge::TextToken.new("  hi")
-    newline = ::LondonBridge::NewlineToken.new("\n")
-    l2 = ::LondonBridge::TextToken.new("こんにちは")
-    tokens = [
-      indent, l1, newline,
-      indent, l2, newline,
-    ]
+    tokens = ::LondonBridge::Lexer.new.lex("      hi\n    こんにちは\n")
+    indent, l1, newline, _indent, l2, _newline = tokens
     expected_ast = [
       :root,
       [:codeblock, [:code, [l1, newline, l2, newline]]]
@@ -52,14 +23,8 @@ class TestParser < Petitest::Test
   end
 
   def test_parse_not_indented_content
-    indent = ::LondonBridge::IndentToken.new("    ")
-    l1 = ::LondonBridge::TextToken.new("  hi")
-    newline = ::LondonBridge::NewlineToken.new("\n")
-    l2 = ::LondonBridge::TextToken.new("こんにちは")
-    tokens = [
-      indent, l1, newline,
-      l2, newline,
-    ]
+    tokens = ::LondonBridge::Lexer.new.lex("      hi\nこんにちは\n")
+    indent, l1, newline, l2, _newline = tokens
     expected_ast = [
       :root,
       [:codeblock, [:code, [l1, newline]]],
@@ -71,28 +36,23 @@ class TestParser < Petitest::Test
   end
 
   def test_parse_themantic_break_token
-    tokens = [::LondonBridge::ThematicBreakToken.new("***\n")]
+    tokens = ::LondonBridge::Lexer.new.lex("***\n")
     assert do
       ::LondonBridge::Parser.new.parse(tokens) == [:root, [:hr]]
     end
   end
 
   def test_parse_too_many_themantic_break_token
-    thematic_break_token = ::LondonBridge::ThematicBreakToken.new("***\n")
-    tokens = [
-      ::LondonBridge::IndentToken.new("    "),
-      thematic_break_token
-    ]
+    tokens = ::LondonBridge::Lexer.new.lex("    ***\n")
+    _indent, thematic_break_token, newline = tokens
     assert do
       ::LondonBridge::Parser.new.parse(tokens) == [:root, [:codeblock, [:code, [thematic_break_token]]]]
     end
   end
 
   def test_parse_blockquote
-    blockquote = ::LondonBridge::BlockquoteToken.new("> ")
-    text = ::LondonBridge::TextToken.new("hi")
-    newline = ::LondonBridge::NewlineToken.new("\n")
-    tokens = [blockquote, text, newline, text, newline, blockquote, text, newline]
+    tokens = ::LondonBridge::Lexer.new.lex("> hi\nhi\n> hi\n")
+    _blockquote, text, newline, _text, _newline, _blockquote, _text, _newline = tokens
     assert do
       ::LondonBridge::Parser.new.parse(tokens) == [:root, [:blockquote, [[:paragraph, [:text, [text, newline, text, newline, text]]]]]]
     end

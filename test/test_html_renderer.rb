@@ -3,44 +3,40 @@ require_relative "test_helper"
 class TestHtmlRenderer < Petitest::Test
   prepend Petitest::PowerAssert
 
-  def test_on_header
-    header_token = ::LondonBridge::HeaderToken.new("#       ")
-    text_token = ::LondonBridge::TextToken.new("hi")
-    ast = [:header, header_token, [[:text, [text_token]]]]
+  def parse(md)
+    ::LondonBridge::Parser.new.parse(::LondonBridge::Lexer.new.lex(md))
+  end
 
+  def test_header
+    ast = parse("#       hi")
     assert do
       ::LondonBridge::HtmlRenderer.new.render(ast) == "<h1>hi</h1>"
     end
   end
 
-  def test_on_text
-    t = ::LondonBridge::TextToken.new("hi")
+  def test_paragraph
+    ast = parse("hi")
     assert do
-      ::LondonBridge::HtmlRenderer.new.on_text([t]) == "hi"
+      ::LondonBridge::HtmlRenderer.new.render(ast) == "<p>hi</p>"
     end
   end
 
-  def test_on_hr
+  def test_hr
+    ast = parse("***\n")
     assert do
-      ::LondonBridge::HtmlRenderer.new.on_hr == "<hr />"
+      ::LondonBridge::HtmlRenderer.new.render(ast) == "<hr />"
     end
   end
 
-  def test_on_codeblock
-    l1 = ::LondonBridge::TextToken.new("  hi")
-    l2 = ::LondonBridge::TextToken.new("こんにちは")
-    newline = ::LondonBridge::NewlineToken.new("\n")
-    ast = [:codeblock, [:code, [l1, newline, l2, newline]]]
+  def test_codeblock
+    ast = parse("      hi\n    こんにちは\n")
     assert do
       ::LondonBridge::HtmlRenderer.new.render(ast) == "<pre><code>  hi\nこんにちは\n</code></pre>"
     end
   end
 
-  def test_on_blockquote
-    blockquote = ::LondonBridge::BlockquoteToken.new("> ")
-    text = ::LondonBridge::TextToken.new("hi")
-    newline = ::LondonBridge::NewlineToken.new("\n")
-    ast = [:blockquote, [[:paragraph, [:text, [text, newline, text]]]]]
+  def test_blockquote
+    ast = parse("> hi\nhi")
     assert do
       ::LondonBridge::HtmlRenderer.new.render(ast) == "<blockquote><p>hi\nhi</p></blockquote>"
     end
