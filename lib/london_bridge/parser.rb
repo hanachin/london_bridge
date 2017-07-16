@@ -57,6 +57,32 @@ module LondonBridge
           content = parse(ts)
           _root, *children = content
           ast << [:blockquote, children]
+        when SpecialToken
+          # TODO support more special tokens
+          unless t.source == "`"
+            tokens.insert(i + 1, TextToken.new(t.source))
+            next
+          end
+
+          index = i
+          loop do
+            break unless tokens[index + 1]
+            break unless tokens[index + 1].is_a?(TextToken)
+            index += 1
+            break if tokens[index].source == t.source
+          end
+
+          if index == i || tokens[index].nil? || tokens[index].source != t.source
+            tokens.insert(i + 1, TextToken.new(t.source))
+            next
+          end
+
+          # TODO support nested special tokens
+          code = tokens[i+1...index]
+          ast << [:code, code]
+          (index - i + 1).times do
+            tokens.delete_at(i + 1)
+          end
         when TextToken
           content = [t]
           loop do
