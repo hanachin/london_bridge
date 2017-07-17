@@ -45,7 +45,7 @@ class TestHtmlRenderer < Petitest::Test
   def test_code_span
     ast = parse("`hi`\n")
     assert do
-      ::LondonBridge::HtmlRenderer.new.render(ast) == "<code>hi</code>"
+      ::LondonBridge::HtmlRenderer.new.render(ast) == "<p><code>hi</code></p>"
     end
   end
 end

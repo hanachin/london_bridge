@@ -69,6 +69,24 @@ module LondonBridge
           content = parse(ts)
           _root, *children = content
           ast << [:blockquote, children]
+        when TextToken
+          ast << parse_paragraph(buffer)
+        when ThematicBreakToken
+          buffer.next_token
+          ast << [:hr]
+        else
+          buffer.next_token
+        end
+      end
+      ast
+    end
+
+    private
+
+    def parse_paragraph(buffer)
+      content = []
+      loop do
+        case buffer.peek
         when SpecialToken
           t = buffer.next_token
           # TODO support more special tokens
@@ -92,36 +110,32 @@ module LondonBridge
 
           # TODO support nested special tokens
           code = buffer[0...index]
-          ast << [:code, code]
+          content << [:code, code]
           (0..index).each do
             buffer.next_token
           end
         when TextToken
-          content = [buffer.next_token]
+          text = [buffer.next_token]
           loop do
             break unless buffer.peek
 
             if buffer.peek.is_a?(TextToken)
-              content << buffer.next_token
+              text << buffer.next_token
               next
             end
 
             if buffer.peek.is_a?(NewlineToken) && !buffer.peek_n(1).is_a?(NewlineToken)
-              content << buffer.next_token
+              text << buffer.next_token
               next
             end
 
             break
           end
-          ast << [:paragraph, [:text, content]]
-        when ThematicBreakToken
-          buffer.next_token
-          ast << [:hr]
+          content << [:text, text]
         else
-          buffer.next_token
+          return [:paragraph, *content]
         end
       end
-      ast
     end
   end
 end

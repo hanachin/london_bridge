@@ -62,7 +62,7 @@ class TestParser < Petitest::Test
     tokens = ::LondonBridge::Lexer.new.lex("`hi`\n")
     special, text, special, newline = tokens
     assert do
-      ::LondonBridge::Parser.new.parse(tokens) == [:root, [:code, [text]]]
+      ::LondonBridge::Parser.new.parse(tokens) == [:root, [:paragraph, [:code, [text]]]]
     end
   end
 end
