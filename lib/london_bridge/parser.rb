@@ -119,7 +119,7 @@ module LondonBridge
           loop do
             break unless buffer.peek
 
-            if buffer.peek.is_a?(TextToken)
+            if buffer.peek.is_a?(TextToken) && !buffer.peek.is_a?(SpecialToken)
               text << buffer.next_token
               next
             end
