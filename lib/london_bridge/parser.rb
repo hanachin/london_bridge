@@ -1,32 +1,45 @@
 module LondonBridge
   class Parser
+    module Buffer
+      refine(Array) do
+        alias peek_n []
+        alias peek first
+        alias next_token shift
+        alias push_token unshift
+      end
+    end
+
+    using Buffer
+
     # @param tokens [Array<Token>] the tokens of markdown
     # @return [Array] the AST of the markdown
     def parse(tokens)
       buffer = tokens.dup
       ast = [:root]
-      buffer.each_with_index do |t, i|
+      loop do
+        break unless t = buffer.next_token
+
         case t
         when HeaderToken
           inline_content = []
-          while buffer.size.nonzero? && buffer[i + 1].is_a?(TextToken)
-            inline_content << buffer.delete_at(i + 1)
+          while buffer.peek.is_a?(TextToken)
+            inline_content << buffer.next_token
           end
           ast << [:header, t, [[:text, inline_content]]]
         when IndentToken
           content = []
-          content << buffer.delete_at(i + 1) until buffer[i + 1].nil? || buffer[i + 1].is_a?(NewlineToken)
-          content << buffer.delete_at(i + 1) unless buffer[i + 1].nil?
+          content << buffer.next_token until buffer.peek.nil? || buffer.peek.is_a?(NewlineToken)
+          content << buffer.next_token if buffer.peek
           catch(:end_block) do
-            while !buffer.empty? && buffer[i + 1].is_a?(IndentToken)
-              buffer.delete_at(i + 1)
-              content << buffer.delete_at(i + 1) until buffer[i + 1].nil? || buffer[i + 1].is_a?(NewlineToken)
-              throw(:end_block) if buffer[i + 1].nil?
+            while buffer.peek&.is_a?(IndentToken)
+              buffer.next_token
+              content << buffer.next_token until buffer.peek.nil? || buffer.peek.is_a?(NewlineToken)
+              throw(:end_block) unless buffer.peek
 
-              content << buffer.delete_at(i + 1)
+              content << buffer.next_token
 
-              unless buffer[i + 1].is_a?(IndentToken)
-                buffer.delete_at(i + 1) while buffer[i + 1].is_a?(NewlineToken)
+              unless buffer.peek.is_a?(IndentToken)
+                buffer.next_token while buffer.peek.is_a?(NewlineToken)
                 throw(:end_block)
               end
             end
@@ -35,18 +48,19 @@ module LondonBridge
         when BlockquoteToken
           ts = []
           catch(:eof) do
+            buffer.push_token(t)
             loop do
-              while buffer.size > i && buffer[i].is_a?(BlockquoteToken)
-                buffer.delete_at(i)
-                ts << buffer.delete_at(i) until buffer[i].nil? || buffer[i].is_a?(NewlineToken)
-                throw(:eof) if buffer[i].nil?
+              while buffer.peek.is_a?(BlockquoteToken)
+                buffer.next_token
+                ts << buffer.next_token until buffer.peek.nil? || buffer.peek.is_a?(NewlineToken)
+                throw(:eof) if buffer.peek.nil?
 
-                ts << buffer.delete_at(i)
+                ts << buffer.next_token
               end
 
-              if buffer[i].is_a?(TextToken)
-                ts << buffer.delete_at(i) while buffer[i].is_a?(TextToken)
-                ts << buffer.delete_at(i) if buffer[i].is_a?(NewlineToken)
+              if buffer.peek.is_a?(TextToken)
+                ts << buffer.next_token while buffer.peek.is_a?(TextToken)
+                ts << buffer.next_token if buffer.peek.is_a?(NewlineToken)
                 next
               end
 
@@ -60,41 +74,41 @@ module LondonBridge
         when SpecialToken
           # TODO support more special tokens
           unless t.source == "`"
-            buffer.insert(i + 1, TextToken.new(t.source))
+            buffer.push_token(TextToken.new(t.source))
             next
           end
 
-          index = i
+          index = 0
           loop do
-            break unless buffer[index + 1]
-            break unless buffer[index + 1].is_a?(TextToken)
+            break unless buffer[index]
+            break unless buffer[index].is_a?(TextToken)
             index += 1
             break if buffer[index].source == t.source
           end
 
-          if index == i || buffer[index].nil? || buffer[index].source != t.source
-            buffer.insert(i + 1, TextToken.new(t.source))
+          if index.zero? || buffer[index].nil? || buffer[index].source != t.source
+            buffer.push_token(TextToken.new(t.source))
             next
           end
 
           # TODO support nested special tokens
-          code = buffer[i+1...index]
+          code = buffer[0...index]
           ast << [:code, code]
-          (index - i + 1).times do
-            buffer.delete_at(i + 1)
+          (0..index).each do
+            buffer.next_token
           end
         when TextToken
           content = [t]
           loop do
-            break if buffer[i + 1].nil?
+            break unless buffer.peek
 
-            if buffer[i + 1].is_a?(TextToken)
-              content << buffer.delete_at(i + 1)
+            if buffer.peek.is_a?(TextToken)
+              content << buffer.next_token
               next
             end
 
-            if buffer[i + 1].is_a?(NewlineToken) && !buffer[i + 2].is_a?(NewlineToken)
-              content << buffer.delete_at(i + 1)
+            if buffer.peek.is_a?(NewlineToken) && !buffer.peek_n(1).is_a?(NewlineToken)
+              content << buffer.next_token
               next
             end
 
