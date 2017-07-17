@@ -87,9 +87,8 @@ module LondonBridge
       content = []
       loop do
         case buffer.peek
-        when SpecialToken
+        when BacktickToken
           t = buffer.next_token
-          # TODO support more special tokens
           unless t.source == "`"
             buffer.push_token(TextToken.new(t.source))
             next
@@ -108,18 +107,23 @@ module LondonBridge
             next
           end
 
-          # TODO support nested special tokens
           code = buffer[0...index]
           content << [:code, code]
           (0..index).each do
             buffer.next_token
           end
+        when SpecialToken
+          # TODO support special tokens
+          # TODO support nested special tokens
+          t = buffer.next_token
+          buffer.push_token(TextToken.new(t.source))
+          next
         when TextToken
           text = [buffer.next_token]
           loop do
             break unless buffer.peek
 
-            if buffer.peek.is_a?(TextToken) && !buffer.peek.is_a?(SpecialToken)
+            if buffer.peek.instance_of?(TextToken)
               text << buffer.next_token
               next
             end

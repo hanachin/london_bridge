@@ -37,9 +37,9 @@ class TestLexer < Petitest::Test
     end
   end
 
-  def test_special
+  def test_backtick
     assert do
-      ::LondonBridge::Lexer.new.lex("`hi`\n") == [::LondonBridge::SpecialToken.new("`"), ::LondonBridge::TextToken.new("hi"), ::LondonBridge::SpecialToken.new("`"), ::LondonBridge::NewlineToken.new("\n")]
+      ::LondonBridge::Lexer.new.lex("`hi`\n") == [::LondonBridge::BacktickToken.new("`"), ::LondonBridge::TextToken.new("hi"), ::LondonBridge::BacktickToken.new("`"), ::LondonBridge::NewlineToken.new("\n")]
     end
   end
 end

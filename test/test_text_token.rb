@@ -15,9 +15,25 @@ class TestTextToken < Petitest::Test
     end
   end
 
+  def test_backtick_token
+    @ts = []
+    md = "`"
+    rest = ::LondonBridge::TextToken.scanner.call(md) do |t|
+      @ts << t
+    end
+
+    assert do
+      rest == ""
+    end
+
+    assert do
+      @ts == md.chars.map { |c| ::LondonBridge::BacktickToken.new(c) }
+    end
+  end
+
   def test_special_tokens
     @ts = []
-    md = "`*_![]()#"
+    md = "*_![]()#"
     rest = ::LondonBridge::TextToken.scanner.call(md) do |t|
       @ts << t
     end

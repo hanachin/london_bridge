@@ -2,6 +2,7 @@ require_relative "token"
 require_relative "newline_token"
 require_relative "backslash_escaped_token"
 require_relative "special_token"
+require_relative "backtick_token"
 
 module LondonBridge
   class TextToken < Token
@@ -25,7 +26,11 @@ module LondonBridge
             else
               t << c
             end
-          when "`", "*", "_", "!", "[", "]", "(", ")", "#"
+          when "`"
+            blk&.call(TextToken.new(t)) unless t.empty?
+            blk&.call(BacktickToken.new(c))
+            t = ""
+          when "*", "_", "!", "[", "]", "(", ")", "#"
             blk&.call(TextToken.new(t)) unless t.empty?
             blk&.call(SpecialToken.new(c))
             t = ""
