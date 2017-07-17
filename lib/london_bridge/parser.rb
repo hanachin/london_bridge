@@ -17,10 +17,11 @@ module LondonBridge
       buffer = tokens.dup
       ast = [:root]
       loop do
-        break unless t = buffer.next_token
+        break unless buffer.peek
 
-        case t
+        case buffer.peek
         when HeaderToken
+          t = buffer.next_token
           inline_content = []
           while buffer.peek.is_a?(TextToken)
             inline_content << buffer.next_token
@@ -28,8 +29,6 @@ module LondonBridge
           ast << [:header, t, [[:text, inline_content]]]
         when IndentToken
           content = []
-          content << buffer.next_token until buffer.peek.nil? || buffer.peek.is_a?(NewlineToken)
-          content << buffer.next_token if buffer.peek
           catch(:end_block) do
             while buffer.peek&.is_a?(IndentToken)
               buffer.next_token
@@ -48,7 +47,6 @@ module LondonBridge
         when BlockquoteToken
           ts = []
           catch(:eof) do
-            buffer.push_token(t)
             loop do
               while buffer.peek.is_a?(BlockquoteToken)
                 buffer.next_token
@@ -72,6 +70,7 @@ module LondonBridge
           _root, *children = content
           ast << [:blockquote, children]
         when SpecialToken
+          t = buffer.next_token
           # TODO support more special tokens
           unless t.source == "`"
             buffer.push_token(TextToken.new(t.source))
@@ -98,7 +97,7 @@ module LondonBridge
             buffer.next_token
           end
         when TextToken
-          content = [t]
+          content = [buffer.next_token]
           loop do
             break unless buffer.peek
 
@@ -116,7 +115,10 @@ module LondonBridge
           end
           ast << [:paragraph, [:text, content]]
         when ThematicBreakToken
+          buffer.next_token
           ast << [:hr]
+        else
+          buffer.next_token
         end
       end
       ast
