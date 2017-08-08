@@ -10,8 +10,4 @@ Gem::Specification.new do |s|
   s.executables = s.files.grep(/^bin/)
 
   s.add_development_dependency "rake"
-  s.add_development_dependency "yard"
-  s.add_development_dependency "petitest"
-  s.add_development_dependency "petitest-assertions"
-  s.add_development_dependency "petitest-power_assert"
 end

@@ -1,7 +1,0 @@
-#!/usr/bin/env ruby
-
-require_relative "../lib/london_bridge"
-
-tokens = ::LondonBridge::Lexer.new.lex(STDIN.read)
-ast = ::LondonBridge::Parser.new.parse(tokens)
-puts ::LondonBridge::HtmlRenderer.new.render(ast)
