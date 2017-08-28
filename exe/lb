@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require 'london_bridge'
+
+parser = LondonBridge::BlockParser.new(STDIN)
+renderer = LondonBridge::HtmlRenderer.new(parser, STDOUT)
+renderer.render
