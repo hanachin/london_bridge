@@ -109,5 +109,23 @@ module LondonBridge
         ctx.puts('</p>')
       end
     end
+
+    refine(LondonBridge::BlockParser::BlockQuoteStartEvent) do
+      def render(ctx)
+        ctx.print('<blockquote>')
+      end
+    end
+
+    refine(LondonBridge::BlockParser::BlockQuoteInlineContentEvent) do
+      def render(ctx)
+        child.render(ctx)
+      end
+    end
+
+    refine(LondonBridge::BlockParser::BlockQuoteEndEvent) do
+      def render(ctx)
+        ctx.puts('</blockquote>')
+      end
+    end
   end
 end
