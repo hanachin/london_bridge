@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'london_bridge'
+require_relative '../lib/london_bridge'
 
 parser = LondonBridge::BlockParser.new(STDIN)
 renderer = LondonBridge::HtmlRenderer.new(parser, STDOUT)
