@@ -112,7 +112,7 @@ module LondonBridge
 
     refine(LondonBridge::BlockParser::BlockQuoteStartEvent) do
       def render(ctx)
-        ctx.print('<blockquote>')
+        ctx.puts('<blockquote>')
       end
     end
 
