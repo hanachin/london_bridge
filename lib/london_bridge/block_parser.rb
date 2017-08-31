@@ -79,6 +79,7 @@ module LondonBridge
           end_paragraph { |p| yield p }
           parse_blank_lines(input) { |event| yield event }
         when /^ {0,3}> ?/
+          end_paragraph { |p| yield p }
           parse_blockquote(input) { |event| yield event }
         else
           add_paragraph(input)
