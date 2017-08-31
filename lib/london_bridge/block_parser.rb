@@ -65,7 +65,7 @@ module LondonBridge
         when /^ {0,3}(\*|-|_)(?: *\1 *){2,}$/
           end_paragraph { |p| yield p }
           parse_thematic_break(input) { |tb| yield tb }
-        when /^( {0,3}\#{1,6} +)(?:|#+ *|(.*)(?: +#+ *)|(.*))\R/
+        when /^( {0,3}\#{1,6}(?!#) *)(?:|(#+ *)|(.*)( +#+ *)|(.*))\R/
           end_paragraph { |p| yield p }
           parse_atx_heading(input, $~) { |h| yield h }
         when /^( {0,3})((`|~)\3{2,})(?:\R| +\R| +((?:.(?! +\R))+.) *\R)/
@@ -195,8 +195,8 @@ module LondonBridge
     def parse_atx_heading(input, m)
       line, lineno = input.next
       yield AtxHeadingStartEvent.new(lineno, m[1])
-      yield AtxHeadingInlineContentEvent.new(lineno, m[2] || m[4])
-      yield AtxHeadingEndEvent.new(lineno, m[3] || '')
+      yield AtxHeadingInlineContentEvent.new(lineno, m[3] || m[5])
+      yield AtxHeadingEndEvent.new(lineno, m[2] || m[4] || '')
     end
 
     def parse_thematic_break(input)
