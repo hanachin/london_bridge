@@ -141,7 +141,7 @@ module LondonBridge
       new_input = Enumerator.new do |y|
         loop do
           line, lineno = input.peek
-          raise StopIteration unless line.match(/^ {0,3}> ?/)
+          raise StopIteration if line.match(/^ *$/)
           line, lineno = input.next
           original[lineno] = line
           y << line.gsub(/^ {0,3}> ?/, '')
