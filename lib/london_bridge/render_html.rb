@@ -118,7 +118,16 @@ module LondonBridge
 
     refine(LondonBridge::BlockParser::BlockQuoteInlineContentEvent) do
       def render(ctx)
-        child.render(ctx)
+        case child
+        when LondonBridge::BlockParser::StartEvent
+          ctx.blocks << child
+          child.render(ctx)
+        when LondonBridge::BlockParser::EndEvent
+          child.render(ctx)
+          ctx.blocks.pop
+        when LondonBridge::BlockParser::InlineContentEvent
+          child.render(ctx)
+        end
       end
     end
 
