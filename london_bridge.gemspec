@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["Seiei Miyagi"]
   s.email = "hanachin@gmail.com"
   s.files = `git ls-files`.split(/\R/)
-  s.executables = s.files.grep(/^bin/)
+  s.executables = s.files.grep(/^exe/)
 
   s.add_development_dependency "rake"
 end
