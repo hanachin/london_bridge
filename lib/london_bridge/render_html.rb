@@ -48,7 +48,7 @@ module LondonBridge
 
     refine(LondonBridge::BlockParser::FencedCodeEndEvent) do
       def render(ctx)
-        ctx.puts '</pre></code>'
+        ctx.puts '</code></pre>'
       end
     end
 
@@ -72,7 +72,7 @@ module LondonBridge
     refine(LondonBridge::BlockParser::IndentedCodeEndEvent) do
       def render(ctx)
         ctx.indented_codes_maybe&.clear
-        ctx.puts '</pre></code>'
+        ctx.puts '</code></pre>'
       end
     end
 
