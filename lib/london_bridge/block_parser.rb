@@ -94,7 +94,8 @@ module LondonBridge
       source, lineno = input.next
       @paragraph ||= []
       if @paragraph.empty?
-        @paragraph << ParagraphStartEvent.new(lineno, source)
+        @paragraph << ParagraphStartEvent.new(lineno, '')
+        @paragraph << ParagraphInlineContentEvent.new(lineno, source)
       else
         @paragraph << ParagraphInlineContentEvent.new(lineno, source)
       end
