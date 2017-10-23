@@ -187,10 +187,10 @@ module LondonBridge
           line, lineno = input.next
           yield IndentedCodeInlineContentEvent.new(lineno, line)
         else
-          yield IndentedCodeEndEvent.new(lineno, '')
-          break
+          raise StopIteration
         end
       end
+      yield IndentedCodeEndEvent.new(lineno, '')
     end
 
     def parse_atx_heading(input, m)
