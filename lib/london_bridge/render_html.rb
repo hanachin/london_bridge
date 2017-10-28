@@ -137,6 +137,18 @@ module LondonBridge
       end
     end
 
+    refine(LondonBridge::BlockParser::UnOrderedListStartEvent) do
+      def render(ctx)
+        ctx.puts('<ul>')
+      end
+    end
+
+    refine(LondonBridge::BlockParser::UnOrderedListEndEvent) do
+      def render(ctx)
+        ctx.puts('</ul>')
+      end
+    end
+
     refine(LondonBridge::BlockParser::ListItemStartEvent) do
       def render(ctx)
         if tight?

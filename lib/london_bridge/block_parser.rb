@@ -17,7 +17,7 @@ module LondonBridge
     end
 
     [StartEvent, EndEvent, InlineContentEvent].each do |klass|
-      %w(ThematicBreak AtxHeading FencedCode IndentedCode BlankLines Paragraph BlockQuote ListItem).each do |b|
+      %w(ThematicBreak AtxHeading FencedCode IndentedCode BlankLines Paragraph BlockQuote UnOrderedList ListItem).each do |b|
         n = klass.name.split('::').last
         const_set("#{b}#{n}", Class.new(klass))
       end
@@ -82,8 +82,12 @@ module LondonBridge
 
     def each
       input = self.input.each.with_index
+      last_lineno = 0
+      ul_continue = false
       loop do
         line, lineno = input.peek
+        last_lineno = lineno
+        ul_hit = false
         case line
         when /^ {0,3}(\*|-|_)(?: *\1 *){2,}$/
           end_paragraph { |p| yield  p }
@@ -106,12 +110,24 @@ module LondonBridge
           parse_blockquote(input) { |event| yield event }
         when /^( ?(?:-|\+|\*)[ \t]+)/
           end_paragraph { |p| yield p }
+          unless ul_continue
+            yield UnOrderedListStartEvent.new(lineno, '')
+          end
           parse_unordered_list(input, indent: $~[1].size) { |event| yield event }
+          ul_hit = true
         else
           add_paragraph(input)
         end
+        if ul_continue && !ul_hit
+          yield UnOrderedListEndEvent.new(lineno, '')
+        end
+        ul_continue = ul_hit
       end
       end_paragraph { |p| yield p }
+
+      if ul_continue
+        yield UnOrderedListEndEvent.new(last_lineno, '')
+      end
     end
 
     private
