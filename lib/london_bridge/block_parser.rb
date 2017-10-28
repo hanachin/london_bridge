@@ -17,7 +17,7 @@ module LondonBridge
     end
 
     [StartEvent, EndEvent, InlineContentEvent].each do |klass|
-      %w(ThematicBreak AtxHeading FencedCode IndentedCode BlankLines Paragraph BlockQuote).each do |b|
+      %w(ThematicBreak AtxHeading FencedCode IndentedCode BlankLines Paragraph BlockQuote ListItem).each do |b|
         n = klass.name.split('::').last
         const_set("#{b}#{n}", Class.new(klass))
       end
@@ -57,13 +57,36 @@ module LondonBridge
       end
     end
 
+
+    [ListItemStartEvent, ListItemEndEvent].each do |klass|
+      klass.class_eval do
+        def list_indent
+          @options.fetch(:list_indent)
+        end
+
+        def tight?
+          @options.fetch(:tight, false)
+        end
+      end
+    end
+
+    ListItemInlineContentEvent.class_eval do
+      def child
+        @options.fetch(:child)
+      end
+
+      def tight?
+        @options.fetch(:tight, false)
+      end
+    end
+
     def each
       input = self.input.each.with_index
       loop do
         line, lineno = input.peek
         case line
         when /^ {0,3}(\*|-|_)(?: *\1 *){2,}$/
-          end_paragraph { |p| yield p }
+          end_paragraph { |p| yield  p }
           parse_thematic_break(input) { |tb| yield tb }
         when /^( {0,3}\#{1,6}(?!#)(?:[ \t]+|(?=\R)))(?:|(#+[ \t]*)|(.*)([ \t]+#+[ \t]*)|(.*))\R/
           end_paragraph { |p| yield p }
@@ -81,6 +104,9 @@ module LondonBridge
         when /^ {0,3}> ?/
           end_paragraph { |p| yield p }
           parse_blockquote(input) { |event| yield event }
+        when /^( ?(?:-|\+|\*)[ \t]+)/
+          end_paragraph { |p| yield p }
+          parse_unordered_list(input, indent: $~[1].size) { |event| yield event }
         else
           add_paragraph(input)
         end
@@ -204,6 +230,66 @@ module LondonBridge
       line, lineno = input.next
       yield ThematicBreakStartEvent.new(lineno, line)
       yield ThematicBreakEndEvent.new(lineno, '')
+    end
+
+    def list_indent
+      store[:list_indent] ||= 0
+    end
+
+    def inc_list_indent
+      store[:list_indent] = list_indent + 1
+    end
+
+    def dec_list_indent
+      store[:list_indent] = list_indent - 1
+    end
+
+    def store
+      Thread.current[:london_bridge_store] ||= {}
+    end
+
+    def parse_unordered_list(input, indent:)
+      line, lineno = input.next
+      inc_list_indent
+
+      start_event = ListItemStartEvent.new(lineno, line, list_indent: list_indent)
+
+      offset = lineno
+      original = {}
+      new_input = Enumerator.new do |y|
+        original[lineno] = line
+        y << line[indent..-1]
+        loop do
+          line, lineno = input.peek
+          if !line.match(/^[ \t]{#{indent}}/) && !line.match(/^\s*$/)
+            raise StopIteration
+          end
+          line, lineno = input.next
+          original[lineno] = line
+          y << line.sub(/[ \t]{#{indent}}/, '')
+        end
+      end
+
+      children = self.class.new(new_input).map do |e|
+        ListItemInlineContentEvent.new(e.lineno + offset, original.fetch(e.lineno + offset), child: e)
+      end
+
+      end_event = ListItemEndEvent.new(lineno, line, list_indent: list_indent)
+
+      tight = children.map(&:child).reverse_each.drop_while { |e|
+        e.kind_of?(BlankLinesStartEvent) ||
+          e.kind_of?(BlankLinesInlineContentEvent) ||
+          e.kind_of?(BlankLinesEndEvent)
+      }.map(&:source).compact.join.count("\n") <= 1
+      [start_event, end_event].each do |e|
+        e.options[:tight] = tight
+      end
+
+      yield start_event
+      children.each { |child| yield child }
+      yield end_event
+
+      dec_list_indent
     end
   end
 end

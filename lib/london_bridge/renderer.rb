@@ -12,6 +12,14 @@ module LondonBridge
       def current_block
         blocks.last
       end
+
+      def current_list_block
+        blocks.reverse_each.detect { |b| b.kind_of?(LondonBridge::BlockParser::ListItemStartEvent) }
+      end
+
+      def previous_list_block
+        blocks.reverse_each.map { |b| b.kind_of?(LondonBridge::BlockParser::ListItemStartEvent) }.drop(1).first
+      end
     end
 
     private

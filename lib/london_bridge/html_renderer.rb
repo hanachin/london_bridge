@@ -8,16 +8,22 @@ module LondonBridge
     def render
       reset_context
       parser.each do |event|
-        case event
-        when LondonBridge::BlockParser::StartEvent
-          current_context.blocks << event
-          event.render(current_context)
-        when LondonBridge::BlockParser::EndEvent
-          event.render(current_context)
-          current_context.blocks.pop
-        when LondonBridge::BlockParser::InlineContentEvent
-          event.render(current_context)
-        end
+        handle_event(event)
+      end
+    end
+
+    private
+
+    def handle_event(event)
+      case event
+      when LondonBridge::BlockParser::StartEvent
+        current_context.blocks << event
+        event.render(current_context)
+      when LondonBridge::BlockParser::EndEvent
+        event.render(current_context)
+        current_context.blocks.pop
+      when LondonBridge::BlockParser::InlineContentEvent
+        event.render(current_context)
       end
     end
   end

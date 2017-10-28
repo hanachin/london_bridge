@@ -136,5 +136,38 @@ module LondonBridge
         ctx.puts('</blockquote>')
       end
     end
+
+    refine(LondonBridge::BlockParser::ListItemStartEvent) do
+      def render(ctx)
+        if tight?
+          ctx.print('<li>')
+        else
+          ctx.puts('<li>')
+        end
+      end
+    end
+
+    refine(LondonBridge::BlockParser::ListItemInlineContentEvent) do
+      def render(ctx)
+        case child
+        when LondonBridge::BlockParser::StartEvent
+          return if ctx.current_list_block.tight? && child.kind_of?(LondonBridge::BlockParser::ParagraphStartEvent)
+          ctx.blocks << child
+          child.render(ctx)
+        when LondonBridge::BlockParser::EndEvent
+          return if ctx.current_list_block.tight? && child.kind_of?(LondonBridge::BlockParser::ParagraphEndEvent)
+          child.render(ctx)
+          ctx.blocks.pop
+        when LondonBridge::BlockParser::InlineContentEvent
+          child.render(ctx)
+        end
+      end
+    end
+
+    refine(LondonBridge::BlockParser::ListItemEndEvent) do
+      def render(ctx)
+        ctx.puts('</li>')
+      end
+    end
   end
 end
