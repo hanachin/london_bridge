@@ -83,54 +83,59 @@ module LondonBridge
     def each
       input = self.input.each.with_index
       last_lineno = 0
-      ul_continue = false
+      @ul_continue = false
       loop do
         line, lineno = input.peek
-        last_lineno = lineno
+        @last_lineno = lineno
         ul_hit = false
         case line
         when /^ {0,3}(\*|-|_)(?: *\1 *){2,}$/
+          end_ul {|e| yield  e }
           end_paragraph { |p| yield  p }
           parse_thematic_break(input) { |tb| yield tb }
         when /^( {0,3}\#{1,6}(?!#)(?:[ \t]+|(?=\R)))(?:|(#+[ \t]*)|(.*)([ \t]+#+[ \t]*)|(.*))\R/
+          end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_atx_heading(input, $~) { |h| yield h }
         when /^( {0,3})((`|~)\3{2,})(?:\R| +\R| +((?:.(?! +\R))+.) *\R)/
+          end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           options = { indent: $~[1].size, fence: $~[3], fence_length: $~[2].size, info_string: $~[4] }
           parse_fenced_code(input, **options) { |event| yield event }
         when /^ {4,}[^ \n\r]/
+          end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_indented_code(input) { |event| yield event }
         when /^ *$/
+          end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_blank_lines(input) { |event| yield event }
         when /^ {0,3}> ?/
+          end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_blockquote(input) { |event| yield event }
         when /^( ?(?:-|\+|\*)[ \t]+)/
           end_paragraph { |p| yield p }
-          unless ul_continue
+          unless @ul_continue
             yield UnOrderedListStartEvent.new(lineno, '')
           end
           parse_unordered_list(input, indent: $~[1].size) { |event| yield event }
           ul_hit = true
         else
+          end_ul {|e| yield  e }
           add_paragraph(input)
         end
-        if ul_continue && !ul_hit
-          yield UnOrderedListEndEvent.new(lineno, '')
-        end
-        ul_continue = ul_hit
+        @ul_continue = ul_hit
       end
+      end_ul {|e| yield  e }
       end_paragraph { |p| yield p }
-
-      if ul_continue
-        yield UnOrderedListEndEvent.new(last_lineno, '')
-      end
     end
 
     private
+
+    def end_ul
+      yield UnOrderedListEndEvent.new(@last_lineno, '') if @ul_continue
+    end
 
     def add_paragraph(input)
       source, lineno = input.next
