@@ -82,7 +82,7 @@ module LondonBridge
           ctx.indented_codes_maybe << self
         else
           ctx.indented_codes_maybe.each do |code|
-            ctx.print code.source[4..-1]
+            ctx.print code.source[4..-1] || "\n"
           end
           ctx.indented_codes_maybe.clear
           ctx.puts source[4..-1]
