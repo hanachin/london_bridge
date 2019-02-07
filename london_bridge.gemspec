@@ -10,6 +10,8 @@ Gem::Specification.new do |s|
   s.executables = s.files.grep(/^exe/)
 
   s.add_development_dependency "pry"
+  s.add_development_dependency "pry-byebug"
+  s.add_development_dependency "pry-doc"
   s.add_development_dependency "rake"
   s.add_development_dependency "rspec"
 end
