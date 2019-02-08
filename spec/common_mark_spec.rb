@@ -14,7 +14,7 @@ COMMON_MARK_TESTS.group_by {|t| t["section"] }.each do |section, tests|
         output = StringIO.new
         renderer = LondonBridge::HtmlRenderer.new(parser, output)
         renderer.render
-        expect(output.string).to eq(t["html"])
+        expect(output.string).to eq(t["html"]), t["markdown"].inspect
       end
     end
   end
