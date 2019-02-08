@@ -102,7 +102,7 @@ module LondonBridge
           end_paragraph { |p| yield p }
           options = { indent: $~[1].size, fence: $~[3], fence_length: $~[2].size, info_string: $~[4] }
           parse_fenced_code(input, **options) { |event| yield event }
-        when /^ {4,}[^ \n\r]/
+        when /^( {4,}| *\t)[^ \n\r]/
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_indented_code(input) { |event| yield event }
@@ -227,7 +227,7 @@ module LondonBridge
       loop do
         line, lineno = input.peek
         case line
-        when /^ {4,}[^ \R]/
+        when /^( {4,}| *\t)[^ \R]/
           line, lineno = input.next
           yield IndentedCodeInlineContentEvent.new(lineno, line)
         when /^ *$/

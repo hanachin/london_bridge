@@ -82,11 +82,18 @@ module LondonBridge
           ctx.indented_codes_maybe << self
         else
           ctx.indented_codes_maybe.each do |code|
-            ctx.print code.source[4..-1] || "\n"
+            ctx.print deindent(code.source)
           end
           ctx.indented_codes_maybe.clear
-          ctx.puts source[4..-1]
+          ctx.puts deindent(source)
         end
+      end
+
+      private
+
+      def deindent(source)
+        m = source.match(/^( {4,}| *\t)[^ \R]/)
+        source[m[1].size..-1] || "\n"
       end
     end
 
