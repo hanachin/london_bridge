@@ -227,7 +227,7 @@ module LondonBridge
       loop do
         line, lineno = input.peek
         case line
-        when /^( {4,}| *\t)[^ \R]/
+        when /^( {4}|\t)/
           line, lineno = input.next
           yield IndentedCodeInlineContentEvent.new(lineno, line)
         when /^ *$/

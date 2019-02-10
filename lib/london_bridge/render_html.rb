@@ -92,8 +92,20 @@ module LondonBridge
       private
 
       def deindent(source)
-        m = source.match(/^( {4,}| *\t)[^ \R]/)
-        source[m[1].size..-1] || "\n"
+        if m = source.match(/^( {4})/)
+          source[m[1].size..-1] || "\n"
+        elsif m = source.match(/^\t[^\t]/)
+          source[1..-1]
+        elsif m = source.match(/^( {,3})(\t+)/)
+          if m[1].size.nonzero?
+            indent = " " * (3 * (m[2].size - 1) + 4)
+          else
+            indent = " " * (3 * m[2].size)
+          end
+          deindent(indent + source[m[0].size..-1])
+        else
+          source
+        end
       end
     end
 
