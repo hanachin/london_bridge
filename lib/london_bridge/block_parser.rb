@@ -89,7 +89,7 @@ module LondonBridge
         @last_lineno = lineno
         ul_hit = false
         case line
-        when /^ {0,3}(\*|-|_)(?: *\1 *){2,}$/
+        when /^ {0,3}(\*|-|_)(?:[\t ]*\1[\t ]*){2,}$/
           end_ul {|e| yield  e }
           end_paragraph { |p| yield  p }
           parse_thematic_break(input) { |tb| yield tb }
