@@ -308,11 +308,15 @@ module LondonBridge
 
       end_event = ListItemEndEvent.new(lineno, line, list_indent: list_indent)
 
-      tight = children.map(&:child).reverse_each.drop_while { |e|
+      children2 = children.map(&:child).reverse_each.drop_while { |e|
         e.kind_of?(BlankLinesStartEvent) ||
           e.kind_of?(BlankLinesInlineContentEvent) ||
           e.kind_of?(BlankLinesEndEvent)
-      }.map(&:source).compact.join.count("\n") <= 1
+      }
+      if children2.first.kind_of?(UnOrderedListEndEvent)
+        children2 = children2.drop_while {|e| !e.kind_of?(UnOrderedListStartEvent) }.drop(1)
+      end
+      tight = children2.map(&:source).compact.join.count("\n") <= 1
       [start_event, end_event].each do |e|
         e.options[:tight] = tight
       end

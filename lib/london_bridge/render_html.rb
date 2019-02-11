@@ -158,6 +158,9 @@ module LondonBridge
 
     refine(LondonBridge::BlockParser::UnOrderedListStartEvent) do
       def render(ctx)
+        if ctx.current_list_block&.tight?
+          ctx.puts("")
+        end
         ctx.puts('<ul>')
       end
     end
