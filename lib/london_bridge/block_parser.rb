@@ -114,7 +114,7 @@ module LondonBridge
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_blockquote(input) { |event| yield event }
-        when /^( ?(?:-|\+|\*)[ \t]+)/
+        when /^( {0,3}(?:-|\+|\*)[ \t]+)/
           end_paragraph { |p| yield p }
           unless @ul_continue
             yield UnOrderedListStartEvent.new(lineno, '')
@@ -275,6 +275,17 @@ module LondonBridge
 
       start_event = ListItemStartEvent.new(lineno, line, list_indent: list_indent)
 
+      indent_tabable, indent_sp = indent.divmod(4)
+      if indent_tabable.zero?
+        regexp = /^ {#{indent}}/
+      else
+        if indent_sp.zero?
+          regexp = /^(?: {#{indent}}|\t{#{indent_tabable}})/
+        else
+          regexp = /^(?: {#{indent}}| {#{indent_sp}}\t{#{indent_tabable}})/
+        end
+      end
+
       offset = lineno
       original = {}
       new_input = Enumerator.new do |y|
@@ -282,12 +293,12 @@ module LondonBridge
         y << line[indent..-1]
         loop do
           line, lineno = input.peek
-          if !line.match(/^[ \t]{#{indent}}/) && !line.match(/^\s*$/)
+          if !line.match(regexp) && !line.match(/^\s*$/)
             raise StopIteration
           end
           line, lineno = input.next
           original[lineno] = line
-          y << line.sub(/[ \t]{#{indent}}/, '')
+          y << line.sub(regexp, '')
         end
       end
 
