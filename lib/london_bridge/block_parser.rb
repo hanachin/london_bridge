@@ -17,8 +17,8 @@ module LondonBridge
     end
 
     [StartEvent, EndEvent, InlineContentEvent].each do |klass|
+      n = klass.name.split('::').last
       %w(ThematicBreak AtxHeading FencedCode IndentedCode BlankLines Paragraph BlockQuote UnOrderedList ListItem).each do |b|
-        n = klass.name.split('::').last
         const_set("#{b}#{n}", Class.new(klass))
       end
     end
