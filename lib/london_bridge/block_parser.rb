@@ -1,13 +1,29 @@
+require 'london_bridge/block_parser/detab'
 require 'london_bridge/block_parser/events'
 
 module LondonBridge
   class BlockParser
+    include Enumerable
+
+    using Detab
+
     def initialize(input)
       @input = input
     end
 
     def each
       input = @input.each.with_index
+
+      def input.peek
+        line, lineno = super
+        [line.detab, lineno]
+      end
+
+      def input.next
+        line, lineno = super
+        [line.detab, lineno]
+      end
+
       last_lineno = 0
       @ul_continue = false
       loop do
@@ -28,7 +44,7 @@ module LondonBridge
           end_paragraph { |p| yield p }
           options = { indent: $~[1].size, fence: $~[3], fence_length: $~[2].size, info_string: $~[4] }
           parse_fenced_code(input, **options) { |event| yield event }
-        when /^( {4,}| *\t)[^ \n\r]/
+        when /^ {4,}[^ \n\r]/
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_indented_code(input) { |event| yield event }
@@ -40,7 +56,7 @@ module LondonBridge
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_blockquote(input) { |event| yield event }
-        when /^( {0,3}(?:-|\+|\*)[ \t]+)/
+        when /^( {0,3}(?:-|\+|\*)(?: |  |   (?! ))?)/
           end_paragraph { |p| yield p }
           unless @ul_continue
             yield UnOrderedListStartEvent.new(lineno, '')
@@ -153,7 +169,7 @@ module LondonBridge
       loop do
         line, lineno = input.peek
         case line
-        when /^( {4}|\t)/
+        when /^ {4,}/
           line, lineno = input.next
           yield IndentedCodeInlineContentEvent.new(lineno, line)
         when /^ *$/
@@ -201,17 +217,6 @@ module LondonBridge
 
       start_event = ListItemStartEvent.new(lineno, line, list_indent: list_indent)
 
-      indent_tabable, indent_sp = indent.divmod(4)
-      if indent_tabable.zero?
-        regexp = /^ {#{indent}}/
-      else
-        if indent_sp.zero?
-          regexp = /^(?: {#{indent}}|\t{#{indent_tabable}})/
-        else
-          regexp = /^(?: {#{indent}}| {#{indent_sp}}\t{#{indent_tabable}})/
-        end
-      end
-
       offset = lineno
       original = {}
       new_input = Enumerator.new do |y|
@@ -219,12 +224,12 @@ module LondonBridge
         y << line[indent..-1]
         loop do
           line, lineno = input.peek
-          if !line.match(regexp) && !line.match(/^\s*$/)
+          if !line.match(/^ {#{indent}}/) && !line.match(/^\s*$/)
             raise StopIteration
           end
           line, lineno = input.next
           original[lineno] = line
-          y << line.sub(regexp, '')
+          y << line.sub(/ {#{indent}}/, '')
         end
       end
 
@@ -242,7 +247,9 @@ module LondonBridge
       if children2.first.kind_of?(UnOrderedListEndEvent)
         children2 = children2.drop_while {|e| !e.kind_of?(UnOrderedListStartEvent) }.drop(1)
       end
-      tight = children2.map(&:source).compact.join.count("\n") <= 1
+      tight = children2.map(&:source).compact.join.count("\n") <= 1 && !children2.any? {|e|
+        e.kind_of?(IndentedCodeStartEvent)
+      }
       [start_event, end_event].each do |e|
         e.options[:tight] = tight
       end
