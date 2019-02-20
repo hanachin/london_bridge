@@ -9,6 +9,7 @@ module LondonBridge
 
     def initialize(input)
       @input = input
+      @paragraph = []
     end
 
     def each
@@ -81,7 +82,6 @@ module LondonBridge
 
     def add_paragraph(input)
       source, lineno = input.next
-      @paragraph ||= []
       if @paragraph.empty?
         @paragraph << ParagraphStartEvent.new(lineno, '')
         @paragraph << ParagraphInlineContentEvent.new(lineno, source)
@@ -91,7 +91,7 @@ module LondonBridge
     end
 
     def end_paragraph
-      return if @paragraph.nil? || @paragraph.empty?
+      return if @paragraph.empty?
 
       if @paragraph.size == 1
         last = @paragraph.pop
