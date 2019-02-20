@@ -62,7 +62,7 @@ module LondonBridge
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_blockquote(input) { |event| yield event }
-        when /^( {0,3}(?:-|\+|\*)(?: |  |   (?! ))?)/
+        when /^( {0,3}(?:-|\+|\*)(?: |  |   (?! ))?(?!-|\+|\*))/
           end_paragraph { |p| yield p }
           unless @ul_continue
             yield UnOrderedListStartEvent.new(lineno, '')
@@ -253,7 +253,8 @@ module LondonBridge
         children2 = children2.drop_while {|e| !e.kind_of?(UnOrderedListStartEvent) }.drop(1)
       end
       tight = children2.map(&:source).compact.join.count("\n") <= 1 && !children2.any? {|e|
-        e.kind_of?(IndentedCodeStartEvent)
+        e.kind_of?(IndentedCodeStartEvent) ||
+          e.kind_of?(ThematicBreakStartEvent)
       }
       [start_event, end_event].each do |e|
         e.options[:tight] = tight
