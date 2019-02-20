@@ -104,6 +104,12 @@ module LondonBridge
       end
     end
 
+    refine(LondonBridge::BlockParser::ParagraphInlineContentEvent) do
+      def render(ctx)
+        ctx.print source.lstrip
+      end
+    end
+
     refine(LondonBridge::BlockParser::ParagraphEndEvent) do
       def render(ctx)
         ctx.puts('</p>')

@@ -46,9 +46,14 @@ module LondonBridge
           options = { indent: $~[1].size, fence: $~[3], fence_length: $~[2].size, info_string: $~[4] }
           parse_fenced_code(input, **options) { |event| yield event }
         when /^ {4,}[^ \n\r]/
-          end_ul {|e| yield  e }
-          end_paragraph { |p| yield p }
-          parse_indented_code(input) { |event| yield event }
+          if  @paragraph.empty?
+            end_ul {|e| yield  e }
+            end_paragraph { |p| yield p }
+            parse_indented_code(input) { |event| yield event }
+          else
+            end_ul {|e| yield  e }
+            add_paragraph(input)
+          end
         when /^ *$/
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
