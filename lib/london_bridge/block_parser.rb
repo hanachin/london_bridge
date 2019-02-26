@@ -1,11 +1,13 @@
 require 'london_bridge/block_parser/detab'
 require 'london_bridge/block_parser/events'
+require 'london_bridge/block_parser/markers'
 
 module LondonBridge
   class BlockParser
     include Enumerable
 
     using Detab
+    using Markers
 
     def initialize(input)
       @input = input
@@ -31,21 +33,21 @@ module LondonBridge
         line, lineno = input.peek
         @last_lineno = lineno
         ul_hit = false
-        case line
-        when /^ {0,3}(\*|-|_)(?:[\t ]*\1[\t ]*){2,}$/
+        case
+        when line.thematic_break?
           end_ul {|e| yield  e }
           end_paragraph { |p| yield  p }
           parse_thematic_break(input) { |tb| yield tb }
-        when /^( {0,3}\#{1,6}(?!#)(?:[ \t]+|(?=\R)))(?:|(#+[ \t]*)|(.*)([ \t]+#+[ \t]*)|(.*))\R/
+        when line.atx_heading?
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_atx_heading(input, $~) { |h| yield h }
-        when /^( {0,3})((`|~)\3{2,})(?:\R| +\R| +((?:.(?! +\R))+.) *\R)/
+        when line.fenced_code_block?
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           options = { indent: $~[1].size, fence: $~[3], fence_length: $~[2].size, info_string: $~[4] }
           parse_fenced_code(input, **options) { |event| yield event }
-        when /^ {4,}[^ \n\r]/
+        when line.indented_code_block?
           if  @paragraph.empty?
             end_ul {|e| yield  e }
             end_paragraph { |p| yield p }
@@ -54,15 +56,15 @@ module LondonBridge
             end_ul {|e| yield  e }
             add_paragraph(input)
           end
-        when /^ *$/
+        when line.blank_line?
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_blank_lines(input) { |event| yield event }
-        when /^ {0,3}> ?/
+        when line.block_quotes?
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
           parse_blockquote(input) { |event| yield event }
-        when /^( {0,3}(?:-|\+|\*)(?: |  |   (?! ))?(?!-|\+|\*))/
+        when line.bullet_list?
           end_paragraph { |p| yield p }
           unless @ul_continue
             yield UnOrderedListStartEvent.new(lineno, '')
