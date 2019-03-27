@@ -1,12 +1,14 @@
-require 'london_bridge/block_parser/detab'
-require 'london_bridge/block_parser/events'
-require 'london_bridge/block_parser/markers'
+require_relative 'block_parser/detab'
+require_relative 'block_parser/events'
+require_relative 'block_parser/markers'
+require_relative 'block_parser/fenced_code_parser'
 
 module LondonBridge
   class BlockParser
     include Enumerable
 
     using Detab
+    using FencedCodeHelper
     using Markers
 
     def initialize(input)
@@ -152,15 +154,16 @@ module LondonBridge
       yield BlockQuoteEndEvent.new(original.keys.max, '')
     end
 
-    def parse_fenced_code(input, indent:, fence:, fence_length:, info_string:)
+    def parse_fenced_code(input)
       line, lineno = input.next
-      yield FencedCodeStartEvent.new(lineno, line, indent: indent, fence: fence, fence_length: fence_length, info_string: info_string)
-
-      code_fence = /^ {0,3}#{fence}{#{fence_length},}\R/
+      indent = line.code_fence_indentation
+      info_string = line.code_fence_info_string
+      opening_code_fence = line.opening_code_fence
+      yield FencedCodeStartEvent.new(lineno, line, indent: indent, info_string: info_string)
       loop do
         line, lineno = input.next
-        case line
-        when code_fence
+        case
+        when line.closing_code_fence_of?(opening_code_fence) 
           yield FencedCodeEndEvent.new(lineno, line)
           break
         else

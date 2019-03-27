@@ -123,6 +123,7 @@ RSpec.describe LondonBridge::BlockParser::Markers do
 
     specify do
       aggregate_failures do
+        expect("``~").not_to be_marked_as(:fenced_code_block)
         expect("``").not_to be_marked_as(:fenced_code_block)
         expect("    ```").not_to be_marked_as(:fenced_code_block)
         expect("``` ```").not_to be_marked_as(:fenced_code_block)
