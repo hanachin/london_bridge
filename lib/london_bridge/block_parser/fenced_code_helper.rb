@@ -6,6 +6,7 @@ module LondonBridge
 
         def closing_code_fence
           raise ::LondonBridge::Error unless fenced_code_block?
+
           match(/^ *([~`]+) *$/)&.then { |m| m[1] }
         end
 
@@ -21,6 +22,7 @@ module LondonBridge
 
         def code_fence_info_string
           raise ::LondonBridge::Error unless fenced_code_block?
+
           info_string = match(/^ *[~`]+(.*)$/)[1].strip
           info_string unless info_string.empty?
         end
