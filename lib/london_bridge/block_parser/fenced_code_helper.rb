@@ -3,7 +3,7 @@ module LondonBridge
     module FencedCodeHelper
       refine(String) do
         using ::LondonBridge::BlockParser::Markers
-  
+
         def closing_code_fence
           raise ::LondonBridge::Error unless fenced_code_block?
           match(/^ *([~`]+) *$/)&.then { |m| m[1] }
@@ -24,7 +24,7 @@ module LondonBridge
           info_string = match(/^ *[~`]+(.*)$/)[1].strip
           info_string unless info_string.empty?
         end
-  
+
         def opening_code_fence
           raise ::LondonBridge::Error unless fenced_code_block?
 
