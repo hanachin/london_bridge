@@ -42,6 +42,8 @@ RSpec.describe LondonBridge::BlockParser::FencedCodeHelper do
 
         expect("```".closing_code_fence_of?("````")).to eq(false)
         expect("~~~".closing_code_fence_of?("~~~~")).to eq(false)
+
+        expect("``~".closing_code_fence_of?("```")).to eq(false)
       end
     end
   end

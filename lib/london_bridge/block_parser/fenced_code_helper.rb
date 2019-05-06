@@ -12,6 +12,8 @@ module LondonBridge
 
         def closing_code_fence_of?(opening_code_fence)
           closing_code_fence&.start_with?(opening_code_fence)
+        rescue ::LondonBridge::Error
+          false
         end
 
         def code_fence_indentation
