@@ -20,9 +20,9 @@ RSpec.describe LondonBridge::BlockParser::Markers do
         "### foo ###     ",
         "### foo ### b",
         "# foo#",
-        "### foo \###",
-        "## foo #\##",
-        "# foo \#",
+        "### foo \\###",
+        "## foo #\\##",
+        "# foo \\#",
         "## ",
         "#",
         "### ###"
@@ -32,11 +32,11 @@ RSpec.describe LondonBridge::BlockParser::Markers do
 
     specify do
       aggregate_failures do
-        expect("###### foo").not_to be_marked_as(:thematic_break)
-        expect("#5 bolt").not_to be_marked_as(:thematic_break)
-        expect("#hashtag").not_to be_marked_as(:thematic_break)
-        expect("\## foo").not_to be_marked_as(:thematic_break)
-        expect("    # foo").not_to be_marked_as(:thematic_break)
+        expect("####### foo").not_to be_marked_as(:atx_heading)
+        expect("#5 bolt").not_to be_marked_as(:atx_heading)
+        expect("#hashtag").not_to be_marked_as(:atx_heading)
+        expect("\\## foo").not_to be_marked_as(:atx_heading)
+        expect("    # foo").not_to be_marked_as(:atx_heading)
       end
     end
   end

@@ -3,7 +3,7 @@ module LondonBridge
     module Markers
       refine(String) do
         def atx_heading?
-          match?(/^ {0,3}\#{1,6} */)
+          match?(/^ {0,3}\#{1,6}(?: |$)/)
         end
 
         def blank_line?

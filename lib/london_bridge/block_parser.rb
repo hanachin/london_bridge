@@ -1,6 +1,7 @@
 require_relative 'block_parser/detab'
 require_relative 'block_parser/events'
 require_relative 'block_parser/markers'
+require_relative 'block_parser/atx_heading_parser'
 require_relative 'block_parser/fenced_code_parser'
 
 module LondonBridge
@@ -43,7 +44,7 @@ module LondonBridge
         when line.atx_heading?
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
-          parse_atx_heading(input, $~) { |h| yield h }
+          parse_atx_heading(input) { |ah| yield ah }
         when line.fenced_code_block?
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
@@ -177,11 +178,8 @@ module LondonBridge
       yield IndentedCodeEndEvent.new(lineno, '')
     end
 
-    def parse_atx_heading(input, m)
-      line, lineno = input.next
-      yield AtxHeadingStartEvent.new(lineno, m[1])
-      yield AtxHeadingInlineContentEvent.new(lineno, m[3] || m[5])
-      yield AtxHeadingEndEvent.new(lineno, m[2] || m[4] || '')
+    def parse_atx_heading(input)
+      AtxHeadingParser.parse(input) {|ah| yield ah }
     end
 
     def parse_thematic_break(input)
