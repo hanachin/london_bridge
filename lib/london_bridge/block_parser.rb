@@ -163,7 +163,7 @@ module LondonBridge
       loop do
         line, lineno = input.next
         case
-        when line.closing_code_fence_of?(opening_code_fence) 
+        when line.closing_code_fence_of?(opening_code_fence)
           yield FencedCodeEndEvent.new(lineno, line)
           break
         else
