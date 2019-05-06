@@ -47,8 +47,7 @@ module LondonBridge
         when line.fenced_code_block?
           end_ul {|e| yield  e }
           end_paragraph { |p| yield p }
-          options = { indent: $~[1].size, fence: $~[3], fence_length: $~[2].size, info_string: $~[4] }
-          parse_fenced_code(input, **options) { |event| yield event }
+          parse_fenced_code(input) { |fc| yield fc }
         when line.indented_code_block?
           if  @paragraph.empty?
             end_ul {|e| yield  e }
@@ -155,21 +154,7 @@ module LondonBridge
     end
 
     def parse_fenced_code(input)
-      line, lineno = input.next
-      indent = line.code_fence_indentation
-      info_string = line.code_fence_info_string
-      opening_code_fence = line.opening_code_fence
-      yield FencedCodeStartEvent.new(lineno, line, indent: indent, info_string: info_string)
-      loop do
-        line, lineno = input.next
-        case
-        when line.closing_code_fence_of?(opening_code_fence)
-          yield FencedCodeEndEvent.new(lineno, line)
-          break
-        else
-          yield FencedCodeInlineContentEvent.new(lineno, line, indent: indent)
-        end
-      end
+      FencedCodeParser.parse(input) { |event| yield event }
     end
 
     def parse_indented_code(input)
