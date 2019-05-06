@@ -19,7 +19,7 @@ module LondonBridge
         end
 
         def fenced_code_block?
-          match?(/^ {0,3}(?:(`|~)\1{2,})(?: *[^`~]+)* *$/)
+          match?(/^ {0,3}(?:(?:`{3,})(?: *[^`~ ]+)*|~{3,}(?:|(?: *[^~ ]+)(?: *.+)*)) *$/)
         end
 
         def indented_code_block?

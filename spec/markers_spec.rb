@@ -116,7 +116,8 @@ RSpec.describe LondonBridge::BlockParser::Markers do
         "   ```",
         "```ruby",
         '~~~~    ruby startline=3 $%@#$',
-        "````;"
+        "````;",
+        "~~~ aa ``` ~~~\n"
       ]
       expect(markers).to all(be_marked_as(:fenced_code_block))
     end
@@ -128,6 +129,7 @@ RSpec.describe LondonBridge::BlockParser::Markers do
         expect("    ```").not_to be_marked_as(:fenced_code_block)
         expect("``` ```").not_to be_marked_as(:fenced_code_block)
         expect("~~~ ~~").not_to be_marked_as(:fenced_code_block)
+        expect("``` aa ```").not_to be_marked_as(:fenced_code_block)
       end
     end
   end
