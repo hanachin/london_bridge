@@ -2,6 +2,6 @@
 
 require_relative '../lib/london_bridge'
 
-parser = LondonBridge::BlockParser.new(STDIN)
+parser = LondonBridge::BlockParser.new(STDIN.each.with_index)
 renderer = LondonBridge::HtmlRenderer.new(parser, STDOUT)
 renderer.render

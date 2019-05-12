@@ -3,6 +3,7 @@ require_relative 'block_parser/events'
 require_relative 'block_parser/markers'
 require_relative 'block_parser/atx_heading_parser'
 require_relative 'block_parser/fenced_code_parser'
+require_relative 'block_parser/unordered_list_parser'
 
 module LondonBridge
   class BlockParser
@@ -12,14 +13,13 @@ module LondonBridge
     using FencedCodeHelper
     using Markers
 
-    def initialize(input)
+    def initialize(input, list_level: 1)
       @input = input
       @paragraph = []
+      @list_level = list_level
     end
 
     def each
-      input = @input.each.with_index
-
       def input.peek
         line, lineno = super
         [line.detab, lineno]
@@ -71,7 +71,7 @@ module LondonBridge
           unless @ul_continue
             yield UnOrderedListStartEvent.new(lineno, '')
           end
-          parse_unordered_list(input, indent: $~[1].size) { |event| yield event }
+          parse_unordered_list(input) { |event| yield event }
           ul_hit = true
         else
           end_ul {|e| yield  e }
@@ -84,6 +84,8 @@ module LondonBridge
     end
 
     private
+
+    attr_reader :input
 
     def end_ul
       yield UnOrderedListEndEvent.new(@last_lineno, '') if @ul_continue
@@ -136,7 +138,6 @@ module LondonBridge
     def parse_blockquote(input)
       line, lineno = input.peek
       yield BlockQuoteStartEvent.new(lineno, '')
-      offset = lineno
       original = {}
       new_input = Enumerator.new do |y|
         loop do
@@ -144,12 +145,12 @@ module LondonBridge
           raise StopIteration if line.match(/^ *$/)
           line, lineno = input.next
           original[lineno] = line
-          y << line.gsub(/^ {0,3}> ?/, '')
+          y << [line.gsub(/^ {0,3}> ?/, ''), lineno]
         end
       end
 
       self.class.new(new_input).each do |e|
-        yield BlockQuoteInlineContentEvent.new(e.lineno + offset, original.fetch(e.lineno + offset), child: e)
+        yield BlockQuoteInlineContentEvent.new(e.lineno, original.fetch(e.lineno), child: e)
       end
       yield BlockQuoteEndEvent.new(original.keys.max, '')
     end
@@ -188,71 +189,8 @@ module LondonBridge
       yield ThematicBreakEndEvent.new(lineno, '')
     end
 
-    def list_indent
-      store[:list_indent] ||= 0
-    end
-
-    def inc_list_indent
-      store[:list_indent] = list_indent + 1
-    end
-
-    def dec_list_indent
-      store[:list_indent] = list_indent - 1
-    end
-
-    def store
-      Thread.current[:london_bridge_store] ||= {}
-    end
-
-    def parse_unordered_list(input, indent:)
-      line, lineno = input.next
-      inc_list_indent
-
-      start_event = ListItemStartEvent.new(lineno, line, list_indent: list_indent)
-
-      offset = lineno
-      original = {}
-      new_input = Enumerator.new do |y|
-        original[lineno] = line
-        y << line[indent..-1]
-        loop do
-          line, lineno = input.peek
-          if !line.match(/^ {#{indent}}/) && !line.match(/^\s*$/)
-            raise StopIteration
-          end
-          line, lineno = input.next
-          original[lineno] = line
-          y << line.sub(/ {#{indent}}/, '')
-        end
-      end
-
-      children = self.class.new(new_input).map do |e|
-        ListItemInlineContentEvent.new(e.lineno + offset, original.fetch(e.lineno + offset), child: e)
-      end
-
-      end_event = ListItemEndEvent.new(lineno, line, list_indent: list_indent)
-
-      children2 = children.map(&:child).reverse_each.drop_while { |e|
-        e.kind_of?(BlankLinesStartEvent) ||
-          e.kind_of?(BlankLinesInlineContentEvent) ||
-          e.kind_of?(BlankLinesEndEvent)
-      }
-      if children2.first.kind_of?(UnOrderedListEndEvent)
-        children2 = children2.drop_while {|e| !e.kind_of?(UnOrderedListStartEvent) }.drop(1)
-      end
-      tight = children2.map(&:source).compact.join.count("\n") <= 1 && !children2.any? {|e|
-        e.kind_of?(IndentedCodeStartEvent) ||
-          e.kind_of?(ThematicBreakStartEvent)
-      }
-      [start_event, end_event].each do |e|
-        e.options[:tight] = tight
-      end
-
-      yield start_event
-      children.each { |child| yield child }
-      yield end_event
-
-      dec_list_indent
+    def parse_unordered_list(input)
+      UnorderedListParser.parse(input, @list_level) {|li| yield li }
     end
   end
 end

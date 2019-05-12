@@ -10,7 +10,7 @@ COMMON_MARK_TESTS.group_by {|t| t["section"] }.each do |section, tests|
     tests.each do |t|
       example t["example"] do
         input = StringIO.new(t["markdown"])
-        parser = LondonBridge::BlockParser.new(input)
+        parser = LondonBridge::BlockParser.new(input.each.with_index)
         output = StringIO.new
         renderer = LondonBridge::HtmlRenderer.new(parser, output)
         renderer.render
